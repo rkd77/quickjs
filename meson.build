@@ -143,6 +143,7 @@ qjs_hdrs = files(
   'quickjs.h',
 )
 
+lib_only = get_option('libonly')
 qjs_libc = get_option('libc')
 qjs_libc_srcs = files('quickjs-libc.c')
 qjs_libc_hdrs = files('quickjs-libc.h')
@@ -220,7 +221,7 @@ if qjs_libc
     include_directories: include_directories('.'),
     dependencies: qjs_dep,
   )
-else
+elif not lib_only
   qjs_libc_lib = static_library(
     'quickjs-libc',
     qjs_libc_srcs,
@@ -304,14 +305,19 @@ endif
 qjsc_srcs = files(
   'qjsc.c',
 )
-qjsc_exe = executable(
-  'qjsc',
-  qjsc_srcs,
 
-  c_args: qjs_c_args,
-  dependencies: [qjs_dep, qjs_libc_dep],
-  install: true,
-)
+if lib_only
+  qjsc_exe = '/bin/true'
+else
+  qjsc_exe = executable(
+    'qjsc',
+    qjsc_srcs,
+
+    c_args: qjs_c_args,
+    dependencies: [qjs_dep, qjs_libc_dep],
+    install: true,
+  )
+endif
 
 mimalloc_dep = []
 mimalloc_sys_dep = dependency('mimalloc', required: get_option('cli_mimalloc'))
@@ -328,16 +334,21 @@ qjs_exe_srcs = files(
   'gen/standalone.c',
   'qjs.c',
 )
-qjs_exe = executable(
-  'qjs',
-  qjs_exe_srcs,
 
-  c_args: qjs_c_args,
-  dependencies: [qjs_dep, qjs_libc_dep, mimalloc_dep],
-  export_dynamic: true,
+if lib_only
+  qjs_exe = '/bin/true'
+else
+  qjs_exe = executable(
+    'qjs',
+    qjs_exe_srcs,
 
-  install: true,
-)
+    c_args: qjs_c_args,
+    dependencies: [qjs_dep, qjs_libc_dep, mimalloc_dep],
+    export_dynamic: true,
+
+    install: true,
+  )
+endif
 
 if meson.is_cross_build()
   mimalloc_native_dep = []
