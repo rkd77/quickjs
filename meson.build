@@ -130,8 +130,10 @@ qjs_sys_deps = []
 
 m_dep = cc.find_library('m', required: false)
 qjs_sys_deps += m_dep
-qjs_sys_deps += dependency('threads', required: false)
-qjs_sys_deps += dependency('dl', required: false)
+if host_system != 'dos'
+  qjs_sys_deps += dependency('threads', required: false)
+  qjs_sys_deps += dependency('dl', required: false)
+endif
 
 qjs_srcs = files(
   'dtoa.c',
